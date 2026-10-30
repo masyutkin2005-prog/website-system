@@ -581,6 +581,108 @@ h2 { font-size: var(--fs-h2); }
 
 .marker-data { display: none; }
 
+/* приближение к точке океана (класс is-focused на <html> ставит JS) */
+#oceans .panel { transition: opacity 0.6s ease; }
+html.is-focused #oceans .panel { opacity: 0.06 !important; pointer-events: none; }
+html.is-focused .marker.is-open .marker-label { font-size: var(--fs-sm); }
+
+.focus-back {
+  position: fixed;
+  left: 50%;
+  bottom: calc(1.5rem + env(safe-area-inset-bottom, 0px));
+  z-index: 5;
+  transform: translate(-50%, 1rem);
+  padding: 0.7rem 1.2rem;
+  border: 1px solid var(--accent);
+  border-radius: 999px;
+  background: var(--tip-bg);
+  color: var(--ink);
+  font-family: var(--font-mono);
+  font-size: var(--fs-xs);
+  letter-spacing: 0.08em;
+  cursor: pointer;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.4s ease, transform 0.4s ease, visibility 0.4s;
+}
+html.is-focused .focus-back { opacity: 1; visibility: visible; transform: translate(-50%, 0); }
+.focus-back { z-index: 7; white-space: nowrap; }
+
+/* вид с высоты птичьего полёта (класс is-aerial ставит JS после наезда глобуса) */
+.aerial {
+  position: fixed;
+  inset: 0;
+  z-index: 6;
+  margin: 0;
+  overflow: hidden;
+  background: var(--bg);
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 1s ease, visibility 1s;
+}
+html.is-aerial .aerial { opacity: 1; visibility: visible; }
+html.is-aerial #markers { opacity: 0; }
+
+.aerial-img {
+  position: absolute;
+  inset: 0;
+  background-size: cover;
+  background-position: center;
+  transform: scale(1.06);
+}
+.aerial-img.is-moving { animation: aerial-descend 18s cubic-bezier(0.2, 0.6, 0.3, 1) forwards; }
+@keyframes aerial-descend {
+  from { transform: scale(1.06); }
+  to   { transform: scale(1.45); }
+}
+
+.aerial-caption {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  padding-block: 5rem calc(5.5rem + env(safe-area-inset-bottom, 0px));
+  padding-left: max(clamp(1rem, 5vw, 4rem), env(safe-area-inset-left, 0px));
+  padding-right: max(clamp(1rem, 5vw, 4rem), env(safe-area-inset-right, 0px));
+  background: linear-gradient(to top, rgba(5, 7, 15, 0.92) 0%, rgba(5, 7, 15, 0.7) 55%, rgba(5, 7, 15, 0) 100%);
+  display: grid;
+  gap: 0.5rem;
+  max-width: 100%;
+}
+.aerial-caption > * { margin: 0; max-width: 46rem; }
+.aerial-eyebrow {
+  font-family: var(--font-mono);
+  font-size: var(--fs-xs);
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--accent);
+}
+.aerial-title {
+  font-family: var(--font-head);
+  font-weight: 800;
+  font-size: clamp(1.8rem, 4vw, 3.2rem);
+  line-height: 1.05;
+  color: var(--ink);
+  text-wrap: balance;
+}
+.aerial-tip { font-size: var(--fs-body, 1.05rem); color: var(--ink); }
+.aerial-view { font-size: var(--fs-sm); color: var(--ink-soft, var(--ink)); }
+.aerial-credit {
+  margin-top: 0.4rem;
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
+  letter-spacing: 0.02em;
+  color: var(--ink-soft, var(--ink));
+  opacity: 0.6;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .aerial-img.is-moving { animation: none; }
+  .aerial { transition: none; }
+}
+.focus-back:hover { background: rgba(124, 196, 255, 0.14); }
+.focus-back:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+
 /* ---------- Мобильные ---------- */
 
 @media (max-width: 767.98px) {

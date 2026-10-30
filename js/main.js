@@ -29,7 +29,7 @@ const POSES = {
   structure: { x: -0.42, y: 0,     size: 0.80, lat: 0,   lon: -25,  sunAz: -35, sunEl: 15, clouds: 0.6,  spin: 0 },
   oceans:    { x: 0.44,  y: 0,     size: 0.86, lat: -8,  lon: -172, sunAz: -30, sunEl: 20, clouds: 0.45, spin: 0 },
   life:      { x: -0.42, y: 0,     size: 0.86, lat: -6,  lon: -62,  sunAz: -40, sunEl: 15, clouds: 0.7,  spin: 0 },
-  night:     { x: 0.42,  y: 0,     size: 0.84, lat: 38,  lon: 12,   sunAz: 155, sunEl: 5,  clouds: 0.25, spin: 0 },
+  night:     { x: 0.42,  y: 0,     size: 0.84, lat: 38,  lon: 12,   sunAz: 155, sunEl: 5,  clouds: 0.12, spin: 0 },
   finale:    { x: 0.42,  y: 0,     size: 0.74, lat: 15,  lon: 0,    sunAz: -50, sunEl: 15, clouds: 0.9,  spin: 1 },
 };
 // На телефоне глобус над панелью текста, по центру по горизонтали
@@ -155,7 +155,7 @@ function initGlobe(canvas) {
 
   /* --- Земля: день/ночь по положению Солнца, блики на воде, дымка у края --- */
   const earthMat = new THREE.ShaderMaterial({
-    uniforms: { dayMap: { value: dayMap }, nightMap: { value: nightMap }, specMap: { value: specMap }, sunDir: { value: sunDir } },
+    uniforms: { dayMap: { value: dayMap }, nightMap: { value: nightMap }, specMap: { value: specMap }, sunDir: { value: sunDir }, glintAmt: { value: 1 } },
     vertexShader: /* glsl */ `
       varying vec2 vUv; varying vec3 vN; varying vec3 vP;
       void main() {
@@ -166,7 +166,7 @@ function initGlobe(canvas) {
         gl_Position = projectionMatrix * viewMatrix * wp;
       }`,
     fragmentShader: /* glsl */ `
-      uniform sampler2D dayMap, nightMap, specMap; uniform vec3 sunDir;
+      uniform sampler2D dayMap, nightMap, specMap; uniform vec3 sunDir; uniform float glintAmt;
       varying vec2 vUv; varying vec3 vN; varying vec3 vP;
       void main() {
         vec3 N = normalize(vN);
@@ -181,8 +181,11 @@ function initGlobe(canvas) {
 
         vec3 col = day * (0.035 + 1.1 * max(ndl, 0.0));
         float glint = pow(max(dot(N, normalize(L + V)), 0.0), 320.0) * water * dayAmt;
-        col += vec3(1.0, 0.92, 0.8) * glint * 0.18;
-        col += night * vec3(1.0, 0.78, 0.48) * 1.6 * (1.0 - smoothstep(-0.2, 0.06, ndl));
+        col += vec3(1.0, 0.92, 0.8) * glint * 0.18 * glintAmt;
+        // огни городов: яркие пиксели усиливаются сильнее тёмного фона ночной текстуры
+        float lum = max(night.r, max(night.g, night.b));
+        float boost = 1.8 + 4.2 * smoothstep(0.12, 0.6, lum);
+        col += night * vec3(1.0, 0.8, 0.5) * boost * (1.0 - smoothstep(-0.2, 0.06, ndl));
 
         float fres = pow(1.0 - max(dot(N, V), 0.0), 3.0);
         col += vec3(0.30, 0.58, 1.0) * fres * (0.04 + 0.4 * smoothstep(-0.25, 0.6, ndl));
@@ -329,6 +332,7 @@ function initGlobe(canvas) {
   /* --- вращение рукой: после отпускания возвращается в позу секции --- */
   const user = { yaw: 0, pitch: 0 };
   let drag = null;
+  let dragMoved = false; // чтобы отпускание глобуса после вращения не считалось кликом мимо
   let globeScreen = { x: 0, y: 0, r: 0 };
   const overGlobe = (e) => Math.hypot(e.clientX - globeScreen.x, e.clientY - globeScreen.y) < globeScreen.r;
 
@@ -336,11 +340,13 @@ function initGlobe(canvas) {
     if (!overGlobe(e)) return;
     gsap?.killTweensOf(user);
     drag = { x: e.clientX, y: e.clientY, id: e.pointerId };
+    dragMoved = false;
     canvas.setPointerCapture(e.pointerId);
     canvas.style.cursor = 'grabbing';
   });
   canvas.addEventListener('pointermove', (e) => {
     if (!drag) { canvas.style.cursor = overGlobe(e) ? 'grab' : ''; return; }
+    if (Math.abs(e.clientX - drag.x) + Math.abs(e.clientY - drag.y) > 3) dragMoved = true;
     user.yaw += (e.clientX - drag.x) * 0.006;
     user.pitch = Math.max(-0.7, Math.min(0.7, user.pitch + (e.clientY - drag.y) * 0.006));
     drag.x = e.clientX;
@@ -372,21 +378,94 @@ function initGlobe(canvas) {
     const phi = ((parseFloat(li.dataset.lon) + 180) / 360) * Math.PI * 2;
     const theta = Math.PI / 2 - lat;
     const local = new THREE.Vector3(-Math.cos(phi) * Math.sin(theta), Math.cos(theta), Math.sin(phi) * Math.sin(theta));
-    return { btn, local };
+    // zoom — радиус глобуса при приближении: чем больше, тем ближе (2.9 ≈ обзор 4000 км)
+    return {
+      btn, local, data: li.dataset, tip: tip.textContent,
+      lat: parseFloat(li.dataset.lat), lon: parseFloat(li.dataset.lon), zoom: parseFloat(li.dataset.zoom) || 2.9,
+    };
   });
   const closeAll = (except) => {
     for (const m of markers) if (m.btn !== except) { m.btn.classList.remove('is-open'); m.btn.setAttribute('aria-expanded', 'false'); }
   };
+  /* --- приближение к выбранному месту: глобус разворачивается и наезжает на точку --- */
+  const focus = { v: 0, lat: 0, lon: 0, zoom: 2.9, marker: null, scrollY: 0 };
+  const backBtn = document.createElement('button');
+  backBtn.type = 'button';
+  backBtn.className = 'focus-back';
+  backBtn.textContent = '← Вернуться к океану';
+  document.body.append(backBtn);
+
+  // вид с высоты: после наезда глобуса проявляется снимок места крупным планом
+  const aerial = document.createElement('figure');
+  aerial.className = 'aerial';
+  aerial.innerHTML = `<div class="aerial-img" role="img"></div>
+    <figcaption class="aerial-caption">
+      <p class="aerial-eyebrow">Вид сверху</p>
+      <h3 class="aerial-title"></h3>
+      <p class="aerial-tip"></p>
+      <p class="aerial-view"></p>
+      <p class="aerial-credit"></p>
+    </figcaption>`;
+  document.body.append(aerial);
+  const aerialImg = aerial.querySelector('.aerial-img');
+  let aerialTimer = 0;
+
+  function showAerial(m) {
+    if (!m.data.img) return;
+    aerialImg.style.backgroundImage = `url("${m.data.img}")`;
+    aerialImg.style.filter = m.data.bright ? `brightness(${m.data.bright})` : '';
+    aerialImg.setAttribute('aria-label', m.data.view || m.data.title);
+    aerial.querySelector('.aerial-title').textContent = m.data.title;
+    aerial.querySelector('.aerial-tip').textContent = m.tip;
+    aerial.querySelector('.aerial-view').textContent = m.data.view || '';
+    aerial.querySelector('.aerial-credit').textContent = m.data.credit || '';
+    // перезапуск медленного «снижения» над местом
+    aerialImg.classList.remove('is-moving');
+    void aerialImg.offsetWidth;
+    aerialImg.classList.add('is-moving');
+    root.classList.add('is-aerial');
+  }
+
+  function focusOn(m) {
+    closeAll(m.btn);
+    m.btn.classList.add('is-open');
+    m.btn.setAttribute('aria-expanded', 'true');
+    Object.assign(focus, { marker: m, lat: m.lat, lon: m.lon, zoom: m.zoom, scrollY });
+    root.classList.add('is-focused');
+    root.classList.remove('is-aerial');
+    clearTimeout(aerialTimer);
+    if (m.data.img) new Image().src = m.data.img; // подгрузить снимок, пока глобус поворачивается
+    gsap?.killTweensOf(focus);
+    if (gsap && !reduceMotion) {
+      gsap.to(focus, { v: 1, duration: 1.8, ease: 'power3.inOut' });
+      aerialTimer = setTimeout(() => showAerial(m), 1900);
+    } else {
+      focus.v = 1;
+      showAerial(m);
+    }
+  }
+  function unfocus() {
+    if (!focus.marker) return;
+    focus.marker = null;
+    clearTimeout(aerialTimer);
+    closeAll(null);
+    root.classList.remove('is-focused', 'is-aerial');
+    gsap?.killTweensOf(focus);
+    if (gsap && !reduceMotion) gsap.to(focus, { v: 0, duration: 1.3, ease: 'power3.inOut' });
+    else focus.v = 0;
+  }
   for (const m of markers) {
     m.btn.addEventListener('click', (e) => {
       e.stopPropagation();
-      const open = !m.btn.classList.contains('is-open');
-      closeAll(m.btn);
-      m.btn.classList.toggle('is-open', open);
-      m.btn.setAttribute('aria-expanded', String(open));
+      if (focus.marker === m) unfocus();
+      else focusOn(m);
     });
   }
-  document.addEventListener('click', () => closeAll(null));
+  backBtn.addEventListener('click', (e) => { e.stopPropagation(); unfocus(); });
+  aerial.addEventListener('click', (e) => e.stopPropagation()); // клик по снимку не закрывает его
+  document.addEventListener('click', () => { if (!dragMoved) unfocus(); });
+  addEventListener('keydown', (e) => { if (e.key === 'Escape') unfocus(); });
+  addEventListener('scroll', () => { if (Math.abs(scrollY - focus.scrollY) > 80) unfocus(); }, { passive: true });
 
   const tmp = new THREE.Vector3();
   const nrm = new THREE.Vector3();
@@ -394,7 +473,7 @@ function initGlobe(canvas) {
   const oceansPanel = document.querySelector('#oceans .panel');
   function updateMarkers(settled) {
     const show = activeScene === 'oceans' && settled;
-    if (!show) closeAll(null);
+    if (!show) { unfocus(); closeAll(null); }
     // маркер не должен ложиться поверх текста панели (на телефоне панель перекрывает низ глобуса)
     const pr = show && oceansPanel ? oceansPanel.getBoundingClientRect() : null;
     const underPanel = (x, y) => pr && x > pr.left - 12 && x < pr.right + 12 && y > pr.top - 12 && y < pr.bottom + 12;
@@ -407,7 +486,8 @@ function initGlobe(canvas) {
       const sx = (tmp.x * 0.5 + 0.5) * innerWidth;
       const sy = (-tmp.y * 0.5 + 0.5) * innerHeight;
       m.btn.style.transform = `translate(${sx.toFixed(1)}px, ${sy.toFixed(1)}px)`;
-      const visible = show && facing && !underPanel(sx, sy);
+      // при приближении видна только выбранная точка, панель текста в это время приглушена
+      const visible = show && facing && (focus.marker ? focus.marker === m : !underPanel(sx, sy));
       m.btn.classList.toggle('is-hidden', !visible);
       m.btn.classList.toggle('is-flip', sx > innerWidth * 0.55);
       m.btn.tabIndex = visible ? 0 : -1;
@@ -452,20 +532,27 @@ function initGlobe(canvas) {
     const visW = visH * camera.aspect;
     const diameterPx = cur.size * (isMobile() ? innerWidth : innerHeight);
     const iv = intro.v;
-    const scale = (diameterPx / innerHeight) * visH / 2 * lerp(0.82, 1, iv);
-    earthGroup.position.set(cur.x * visW / 2, cur.y * visH / 2 - (1 - iv) * 0.25, 0);
+    // fv — приближение к выбранной точке (радиус глобуса focus.zoom, камера на расстоянии 6)
+    const fv = focus.v;
+    const scale = lerp((diameterPx / innerHeight) * visH / 2 * lerp(0.82, 1, iv), focus.zoom, fv);
+    earthGroup.position.set(
+      lerp(cur.x * visW / 2, 0, fv),
+      lerp(cur.y * visH / 2 - (1 - iv) * 0.25, 0, fv),
+      0,
+    );
     earthGroup.scale.setScalar(scale);
 
     earthSpin.rotation.set(
-      cur.lat * DEG + user.pitch,
-      -(cur.lon + 90) * DEG + user.yaw + spinOffset * cur.spin,
+      lerp(cur.lat, focus.lat, fv) * DEG + user.pitch,
+      -(cur.lon + wrap180(focus.lon - cur.lon) * fv + 90) * DEG + user.yaw + spinOffset * cur.spin * (1 - fv),
       0,
     );
     clouds.rotation.y = clock.t * (reduceMotion ? 0 : 0.008);
-    cloudMat.uniforms.opacity.value = cur.clouds;
+    cloudMat.uniforms.opacity.value = lerp(cur.clouds, 0.08, fv);
+    earthMat.uniforms.glintAmt.value = 1 - fv; // блик не закрывает выбранное место
 
-    const az = lerp(165, cur.sunAz, iv) * DEG;
-    const el = cur.sunEl * DEG;
+    const az = lerp(lerp(165, cur.sunAz, iv), -25, fv) * DEG;
+    const el = lerp(cur.sunEl, 12, fv) * DEG;
     sunDir.set(Math.sin(az) * Math.cos(el), Math.sin(el), Math.cos(az) * Math.cos(el));
 
     stars.rotation.y = cur.progress * 0.06 + (reduceMotion ? 0 : clock.t * 0.002);
