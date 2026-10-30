@@ -582,8 +582,8 @@ h2 { font-size: var(--fs-h2); }
 .marker-data { display: none; }
 
 /* приближение к точке океана (класс is-focused на <html> ставит JS) */
-#oceans .panel { transition: opacity 0.6s ease; }
-html.is-focused #oceans .panel { opacity: 0.06 !important; pointer-events: none; }
+.scene .panel { transition: opacity 0.6s ease; }
+html.is-focused .scene .panel { opacity: 0.06 !important; pointer-events: none; }
 html.is-focused .marker.is-open .marker-label { font-size: var(--fs-sm); }
 
 .focus-back {
@@ -633,7 +633,7 @@ html.is-aerial #markers { opacity: 0; }
 .aerial-img.is-moving { animation: aerial-descend 18s cubic-bezier(0.2, 0.6, 0.3, 1) forwards; }
 @keyframes aerial-descend {
   from { transform: scale(1.06); }
-  to   { transform: scale(1.45); }
+  to   { transform: scale(var(--aerial-scale, 1.45)); }
 }
 
 .aerial-caption {

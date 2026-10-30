@@ -26,7 +26,7 @@ const sections = [...document.querySelectorAll('.scene[data-scene]')];
 const POSES = {
   hero:      { x: 0,     y: -0.02, size: 0.82, lat: 18,  lon: 15,   sunAz: -55, sunEl: 18, clouds: 0.9,  spin: 1 },
   cosmos:    { x: 0.44,  y: 0,     size: 0.70, lat: 8,   lon: 70,   sunAz: -80, sunEl: 6,  clouds: 0.9,  spin: 0 },
-  structure: { x: -0.42, y: 0,     size: 0.80, lat: 0,   lon: -25,  sunAz: -35, sunEl: 15, clouds: 0.6,  spin: 0 },
+  structure: { x: -0.42, y: 0,     size: 0.80, lat: 22,  lon: 84,   sunAz: -35, sunEl: 15, clouds: 0.5,  spin: 0 }, // Гималаи: здесь кора толще всего
   oceans:    { x: 0.44,  y: 0,     size: 0.86, lat: -8,  lon: -172, sunAz: -30, sunEl: 20, clouds: 0.45, spin: 0 },
   life:      { x: -0.42, y: 0,     size: 0.86, lat: -6,  lon: -62,  sunAz: -40, sunEl: 15, clouds: 0.7,  spin: 0 },
   night:     { x: 0.42,  y: 0,     size: 0.84, lat: 38,  lon: 12,   sunAz: 155, sunEl: 5,  clouds: 0.12, spin: 0 },
@@ -362,7 +362,7 @@ function initGlobe(canvas) {
   canvas.addEventListener('pointerup', release);
   canvas.addEventListener('pointercancel', release);
 
-  /* --- маркеры океанской секции --- */
+  /* --- маркеры: список .marker-data внутри секции, видны только в своей секции --- */
   const markerLayer = document.getElementById('markers');
   const markers = [...document.querySelectorAll('.marker-data li')].map((li) => {
     const btn = document.createElement('button');
@@ -379,8 +379,10 @@ function initGlobe(canvas) {
     const theta = Math.PI / 2 - lat;
     const local = new THREE.Vector3(-Math.cos(phi) * Math.sin(theta), Math.cos(theta), Math.sin(phi) * Math.sin(theta));
     // zoom — радиус глобуса при приближении: чем больше, тем ближе (2.9 ≈ обзор 4000 км)
+    const section = li.closest('.scene');
     return {
       btn, local, data: li.dataset, tip: tip.textContent,
+      scene: section?.dataset.scene, panel: section?.querySelector('.panel'),
       lat: parseFloat(li.dataset.lat), lon: parseFloat(li.dataset.lon), zoom: parseFloat(li.dataset.zoom) || 2.9,
     };
   });
@@ -392,7 +394,7 @@ function initGlobe(canvas) {
   const backBtn = document.createElement('button');
   backBtn.type = 'button';
   backBtn.className = 'focus-back';
-  backBtn.textContent = '← Вернуться к океану';
+  backBtn.textContent = '← Назад к глобусу';
   document.body.append(backBtn);
 
   // вид с высоты: после наезда глобуса проявляется снимок места крупным планом
@@ -414,7 +416,12 @@ function initGlobe(canvas) {
     if (!m.data.img) return;
     aerialImg.style.backgroundImage = `url("${m.data.img}")`;
     aerialImg.style.filter = m.data.bright ? `brightness(${m.data.bright})` : '';
+    // для вида сбоку «снижение» идёт к вершине, а не к центру кадра
+    aerialImg.style.transformOrigin = m.data.origin || '';
+    aerialImg.style.backgroundPosition = m.data.origin || '';
+    aerialImg.style.setProperty('--aerial-scale', m.data.scale || '1.45');
     aerialImg.setAttribute('aria-label', m.data.view || m.data.title);
+    aerial.querySelector('.aerial-eyebrow').textContent = m.data.eyebrow || 'Вид сверху';
     aerial.querySelector('.aerial-title').textContent = m.data.title;
     aerial.querySelector('.aerial-tip').textContent = m.tip;
     aerial.querySelector('.aerial-view').textContent = m.data.view || '';
@@ -472,14 +479,15 @@ function initGlobe(canvas) {
   const tmp = new THREE.Vector3();
   const nrm = new THREE.Vector3();
   const toCam = new THREE.Vector3();
-  const oceansPanel = document.querySelector('#oceans .panel');
   function updateMarkers(settled) {
-    const show = activeScene === 'oceans' && settled;
-    if (!show) { unfocus(); closeAll(null); }
+    if (focus.marker && (focus.marker.scene !== activeScene || !settled)) unfocus();
+    if (!settled) closeAll(null);
     // маркер не должен ложиться поверх текста панели (на телефоне панель перекрывает низ глобуса)
-    const pr = show && oceansPanel ? oceansPanel.getBoundingClientRect() : null;
+    const panel = sections.find((s) => s.dataset.scene === activeScene)?.querySelector('.panel');
+    const pr = settled && panel ? panel.getBoundingClientRect() : null;
     const underPanel = (x, y) => pr && x > pr.left - 12 && x < pr.right + 12 && y > pr.top - 12 && y < pr.bottom + 12;
     for (const m of markers) {
+      const show = settled && m.scene === activeScene;
       tmp.copy(m.local).applyMatrix4(earth.matrixWorld);
       nrm.copy(m.local).transformDirection(earth.matrixWorld);
       toCam.copy(camera.position).sub(tmp).normalize();
