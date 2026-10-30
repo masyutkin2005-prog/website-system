@@ -1,0 +1,662 @@
+/* ==========================================================
+   Голубая точка — стили
+   Слои: body < .sky-tint(0) < #globe(1) < main(2) < #markers(3) < .dots(4) < #loader(10)
+   ========================================================== */
+
+@property --tint-a { syntax: "<color>"; inherits: false; initial-value: rgba(40, 90, 200, 0.18); }
+@property --tint-b { syntax: "<color>"; inherits: false; initial-value: rgba(20, 30, 90, 0.2); }
+
+:root {
+  color-scheme: dark;
+
+  /* цвета */
+  --bg: #05070f;
+  --bg-2: #0a1024;
+  --ink: #eef3fb;
+  --ink-soft: rgba(226, 235, 248, 0.78);
+  --ink-mute: rgba(190, 206, 230, 0.56);
+  --accent: #7cc4ff;
+  --accent-soft: rgba(124, 196, 255, 0.35);
+  --gold: #ffc978;
+  --line: rgba(124, 196, 255, 0.22);
+  --panel-bg: rgba(6, 9, 20, 0.72);
+  --tip-bg: rgba(6, 10, 24, 0.94);
+
+  /* оттенки сцен: a — основной туман, b — вторичный */
+  --tint-hero-a: rgba(40, 100, 210, 0.20);
+  --tint-hero-b: rgba(18, 30, 100, 0.22);
+  --tint-cosmos-a: rgba(70, 60, 190, 0.22);
+  --tint-cosmos-b: rgba(255, 170, 90, 0.12);
+  --tint-structure-a: rgba(120, 28, 20, 0.18);
+  --tint-structure-b: rgba(70, 20, 30, 0.2);
+  --tint-oceans-a: rgba(10, 110, 140, 0.22);
+  --tint-oceans-b: rgba(10, 40, 120, 0.22);
+  --tint-life-a: rgba(18, 100, 60, 0.20);
+  --tint-life-b: rgba(10, 60, 50, 0.20);
+  --tint-night-a: rgba(18, 18, 70, 0.20);
+  --tint-night-b: rgba(4, 4, 24, 0.30);
+  --tint-finale-a: var(--tint-hero-a);
+  --tint-finale-b: var(--tint-hero-b);
+
+  /* слои схемы строения */
+  --layer-crust: #8a6a52;
+  --layer-mantle: #b4442a;
+  --layer-outer: #f08a2c;
+  --layer-inner: #ffe3a1;
+
+  /* шрифты */
+  --font-head: "Exo 2", "Eurostile", "Bank Gothic", "Arial Narrow", system-ui, sans-serif;
+  --font-body: "Golos Text", "Inter", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+
+  /* шкала */
+  --fs-xs: clamp(0.72rem, 0.7rem + 0.1vw, 0.8rem);
+  --fs-sm: clamp(0.85rem, 0.82rem + 0.15vw, 0.95rem);
+  --fs-base: clamp(1rem, 0.96rem + 0.2vw, 1.12rem);
+  --fs-lead: clamp(1.08rem, 1rem + 0.45vw, 1.35rem);
+  --fs-h2: clamp(1.6rem, 1.1rem + 2.2vw, 3rem);
+  --fs-h1: clamp(2.6rem, 1rem + 8vw, 8.5rem);
+  --fs-num: clamp(1.45rem, 1.1rem + 1.2vw, 2.25rem);
+
+  --gutter: clamp(1.25rem, 5vw, 5rem);
+  --dots-room: 3.5rem;
+}
+
+*, *::before, *::after { box-sizing: border-box; }
+
+html {
+  background: var(--bg);
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  html { scroll-behavior: smooth; }
+}
+
+body {
+  margin: 0;
+  background: var(--bg);
+  background: radial-gradient(120% 90% at 50% 0%, var(--bg-2) 0%, var(--bg) 70%) fixed, var(--bg);
+  color: var(--ink);
+  font-family: var(--font-body);
+  font-size: var(--fs-base);
+  line-height: 1.6;
+  font-weight: 400;
+  overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
+}
+
+img, svg, canvas { max-width: 100%; }
+
+a { color: var(--accent); }
+
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 3px;
+  border-radius: 3px;
+}
+
+/* ---------- Слои ---------- */
+
+.sky-tint {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  --tint-a: var(--tint-hero-a);
+  --tint-b: var(--tint-hero-b);
+  background:
+    radial-gradient(60% 55% at 78% 50%, var(--tint-a) 0%, transparent 70%),
+    radial-gradient(70% 60% at 15% 85%, var(--tint-b) 0%, transparent 70%);
+  transition: --tint-a 1.2s ease, --tint-b 1.2s ease, background 1.2s ease;
+}
+html[data-scene="hero"] .sky-tint { --tint-a: var(--tint-hero-a); --tint-b: var(--tint-hero-b); }
+html[data-scene="cosmos"] .sky-tint { --tint-a: var(--tint-cosmos-a); --tint-b: var(--tint-cosmos-b); }
+html[data-scene="structure"] .sky-tint { --tint-a: var(--tint-structure-a); --tint-b: var(--tint-structure-b); }
+html[data-scene="oceans"] .sky-tint { --tint-a: var(--tint-oceans-a); --tint-b: var(--tint-oceans-b); }
+html[data-scene="life"] .sky-tint { --tint-a: var(--tint-life-a); --tint-b: var(--tint-life-b); }
+html[data-scene="night"] .sky-tint { --tint-a: var(--tint-night-a); --tint-b: var(--tint-night-b); }
+html[data-scene="finale"] .sky-tint { --tint-a: var(--tint-finale-a); --tint-b: var(--tint-finale-b); }
+
+#globe {
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 1;
+  display: block;
+  touch-action: pan-y;
+}
+
+main {
+  position: relative;
+  z-index: 2;
+  pointer-events: none;
+}
+
+main .panel,
+main a,
+main button { pointer-events: auto; }
+
+/* ---------- Прелоадер ---------- */
+
+#loader {
+  position: fixed;
+  inset: 0;
+  z-index: 10;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.9rem;
+  background: var(--bg);
+  opacity: 1;
+  visibility: visible;
+  transition: opacity 0.8s ease, visibility 0.8s ease;
+}
+html.is-loaded #loader { opacity: 0; visibility: hidden; pointer-events: none; }
+
+.loader-title {
+  margin: 0;
+  font-family: var(--font-mono);
+  font-size: var(--fs-xs);
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+}
+.loader-bar {
+  width: min(16rem, 60vw);
+  height: 2px;
+  background: rgba(124, 196, 255, 0.16);
+  overflow: hidden;
+}
+.loader-bar span {
+  display: block;
+  height: 100%;
+  width: 0;
+  background: var(--accent);
+  box-shadow: 0 0 12px var(--accent);
+}
+.loader-pct {
+  font-family: var(--font-mono);
+  font-size: var(--fs-xs);
+  font-variant-numeric: tabular-nums;
+  color: var(--ink-mute);
+}
+
+/* ---------- Запасной глобус (без WebGL) ---------- */
+
+.fallback-globe {
+  display: none;
+  position: fixed;
+  z-index: 1;
+  --g: min(70vw, 70vh);
+  width: var(--g);
+  height: var(--g);
+  top: 50%;
+  right: 6vw;
+  transform: translateY(-50%);
+  border-radius: 50%;
+  background: url("../textures/earth-blue-marble.jpg") repeat-x 0 0 / auto 100%;
+  box-shadow:
+    inset -2.2rem -1.2rem 4rem 1rem rgba(0, 0, 8, 0.85),
+    inset 0.6rem 0.4rem 2rem rgba(180, 220, 255, 0.18),
+    0 0 4rem 0.4rem rgba(124, 196, 255, 0.28),
+    0 0 12rem 2rem rgba(60, 130, 255, 0.12);
+  animation: fallback-spin 120s linear infinite;
+  pointer-events: none;
+}
+html.no-webgl .fallback-globe { display: block; }
+html.no-webgl #globe { display: none; }
+
+@keyframes fallback-spin {
+  from { background-position-x: 0; }
+  to { background-position-x: calc(var(--g) * -2); }
+}
+
+/* ---------- Навигация-точки ---------- */
+
+.dots {
+  position: fixed;
+  z-index: 4;
+  right: clamp(0.75rem, 1.6vw, 1.5rem);
+  top: 50%;
+  transform: translateY(-50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.85rem;
+}
+.dots a {
+  position: relative;
+  display: block;
+  width: 6px;
+  height: 6px;
+  border-radius: 3px;
+  background: rgba(190, 206, 230, 0.4);
+  transition: height 0.4s ease, background 0.4s ease, box-shadow 0.4s ease;
+}
+.dots a::after { /* увеличенная зона нажатия */
+  content: "";
+  position: absolute;
+  inset: -8px -10px;
+}
+.dots a:hover { background: var(--ink); }
+.dots a.is-active {
+  height: 28px;
+  background: var(--accent);
+  box-shadow: 0 0 10px 1px var(--accent-soft), 0 0 22px rgba(124, 196, 255, 0.35);
+}
+
+/* ---------- Сцены и панели ---------- */
+
+.scene {
+  position: relative;
+  min-height: 100vh;
+  min-height: 100svh;
+  display: flex;
+  align-items: center;
+  padding: clamp(4rem, 12vh, 8rem) calc(var(--gutter) + var(--dots-room)) clamp(4rem, 12vh, 8rem) var(--gutter);
+}
+.scene--tall { min-height: 120vh; min-height: 120svh; }
+
+.scene[data-side="left"] { justify-content: flex-start; }
+.scene[data-side="right"] { justify-content: flex-end; }
+.scene[data-side="center"] { justify-content: center; }
+
+.panel {
+  width: min(30rem, 40vw);
+  text-shadow: 0 1px 14px rgba(3, 5, 14, 0.7);
+}
+
+.eyebrow {
+  margin: 0 0 1rem;
+  font-family: var(--font-mono);
+  font-size: var(--fs-xs);
+  font-weight: 400;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--accent);
+}
+
+h1, h2 {
+  margin: 0 0 1.25rem;
+  font-family: var(--font-head);
+  font-weight: 600;
+  line-height: 1.08;
+  letter-spacing: -0.01em;
+  text-wrap: balance;
+  color: var(--ink);
+}
+h1 { font-size: var(--fs-h1); font-weight: 800; line-height: 0.95; letter-spacing: 0.02em; text-transform: uppercase; }
+h2 { font-size: var(--fs-h2); }
+
+.panel p {
+  margin: 0 0 1rem;
+  max-width: 60ch;
+  color: var(--ink-soft);
+  text-wrap: pretty;
+}
+.panel .lead { font-size: var(--fs-lead); line-height: 1.5; color: var(--ink); }
+.panel .note {
+  font-size: var(--fs-sm);
+  color: var(--ink-mute);
+  margin-top: 1rem;
+}
+
+/* факты */
+
+.facts {
+  display: grid;
+  gap: 1.1rem 1.6rem;
+  grid-template-columns: repeat(auto-fit, minmax(8.5rem, 1fr));
+  margin: 1.8rem 0 0;
+  padding: 1.1rem 0 0;
+  border-top: 1px solid var(--line);
+}
+.facts > div { min-width: 0; }
+.facts dt {
+  margin: 0 0 0.3rem;
+  font-family: var(--font-mono);
+  font-size: var(--fs-xs);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--ink-mute);
+}
+.facts dd {
+  margin: 0;
+  font-family: var(--font-head);
+  font-weight: 600;
+  font-size: var(--fs-num);
+  line-height: 1.15;
+  color: var(--gold);
+  font-variant-numeric: tabular-nums;
+  text-shadow: 0 0 24px rgba(255, 201, 120, 0.25);
+}
+.facts .count { font-variant-numeric: tabular-nums; }
+.facts .unit {
+  font-family: var(--font-mono);
+  font-size: var(--fs-sm);
+  color: var(--ink-soft);
+  white-space: nowrap;
+}
+
+/* hero и finale: верх и низ, глобус между ними */
+
+.scene--hero,
+.scene--finale { padding-top: clamp(2.5rem, 8vh, 5rem); padding-bottom: clamp(2rem, 6vh, 4rem); }
+
+.scene--hero .panel,
+.scene--finale .panel {
+  width: min(100%, 64rem);
+  min-height: calc(100svh - clamp(4.5rem, 14vh, 9rem));
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 2rem;
+  text-align: center;
+}
+.scene--hero .panel p,
+.scene--finale .panel p { margin-left: auto; margin-right: auto; }
+.scene--hero .facts,
+.scene--finale .facts {
+  justify-content: center;
+  grid-template-columns: repeat(auto-fit, minmax(9rem, 14rem));
+  text-align: center;
+  border-top-color: transparent;
+  margin-top: 1.2rem;
+}
+.scene--finale .panel-bottom { max-width: 40rem; margin: 0 auto; }
+.scene--hero .panel-bottom { max-width: 44rem; margin: 0 auto; }
+.scene--hero h1 { margin-bottom: 0; }
+
+/* подсказка прокрутки */
+
+.scroll-hint {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.6rem;
+  margin-top: 1.5rem;
+  font-family: var(--font-mono);
+  font-size: var(--fs-xs);
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  text-decoration: none;
+  color: var(--ink-soft);
+}
+.scroll-hint i {
+  position: relative;
+  display: block;
+  width: 1px;
+  height: 2.6rem;
+  background: linear-gradient(to bottom, rgba(124, 196, 255, 0), var(--accent));
+  animation: hint-line 2s ease-in-out infinite;
+  transform-origin: top;
+}
+.scroll-hint i::after {
+  content: "";
+  position: absolute;
+  left: -4px;
+  bottom: 0;
+  width: 9px;
+  height: 9px;
+  border-right: 1px solid var(--accent);
+  border-bottom: 1px solid var(--accent);
+  transform: rotate(45deg) translate(-1px, -1px);
+}
+@keyframes hint-line {
+  0%, 100% { transform: scaleY(0.55); opacity: 0.5; }
+  50% { transform: scaleY(1); opacity: 1; }
+}
+
+/* кнопка в финале */
+
+.to-top {
+  display: inline-block;
+  margin-top: 1.6rem;
+  padding: 0.8rem 1.6rem;
+  border: 1px solid var(--accent);
+  border-radius: 999px;
+  font-family: var(--font-mono);
+  font-size: var(--fs-sm);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  text-decoration: none;
+  color: var(--accent);
+  background: rgba(124, 196, 255, 0.06);
+  transition: background 0.3s ease, color 0.3s ease, box-shadow 0.3s ease;
+}
+.to-top:hover {
+  background: var(--accent);
+  color: var(--bg);
+  box-shadow: 0 0 28px var(--accent-soft);
+}
+
+/* ---------- Схема строения ---------- */
+
+.layers {
+  margin: 2rem 0 0;
+  display: grid;
+  grid-template-columns: minmax(7rem, 11rem) 1fr;
+  gap: 0.6rem 1.2rem;
+  align-items: end;
+}
+.layers-svg { width: 100%; height: auto; display: block; overflow: visible; }
+.layers-svg path { stroke: var(--bg); stroke-width: 0.8; }
+.layers-svg .l-crust { fill: var(--layer-crust); }
+.layers-svg .l-mantle { fill: var(--layer-mantle); }
+.layers-svg .l-outer { fill: var(--layer-outer); }
+.layers-svg .l-inner { fill: var(--layer-inner); }
+
+.layers-legend {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 0.55rem;
+  font-size: var(--fs-sm);
+  line-height: 1.35;
+  color: var(--ink-soft);
+}
+.layers-legend li { display: flex; gap: 0.6rem; align-items: baseline; }
+.layers-legend b { font-weight: 500; color: var(--ink); margin-right: 0.25em; }
+.layers-legend .sw {
+  flex: none;
+  width: 0.7rem;
+  height: 0.7rem;
+  border-radius: 50%;
+  transform: translateY(0.05rem);
+}
+.sw-crust { background: var(--layer-crust); }
+.sw-mantle { background: var(--layer-mantle); }
+.sw-outer { background: var(--layer-outer); }
+.sw-inner { background: var(--layer-inner); }
+.layers figcaption {
+  grid-column: 1 / -1;
+  font-family: var(--font-mono);
+  font-size: var(--fs-xs);
+  line-height: 1.5;
+  color: var(--ink-mute);
+}
+
+/* ---------- Маркеры ---------- */
+
+#markers {
+  position: fixed;
+  inset: 0;
+  z-index: 3;
+  pointer-events: none;
+  overflow: hidden;
+}
+.marker {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 0;
+  height: 0;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--ink);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+  pointer-events: auto;
+  opacity: 1;
+  transition: opacity 0.3s ease;
+  will-change: transform;
+}
+.marker.is-hidden { opacity: 0; pointer-events: none; }
+
+.marker-dot {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 10px;
+  height: 10px;
+  margin: -5px 0 0 -5px;
+  border-radius: 50%;
+  background: var(--gold);
+  box-shadow: 0 0 10px var(--gold);
+}
+.marker-dot::before { /* зона нажатия */
+  content: "";
+  position: absolute;
+  inset: -12px;
+  border-radius: 50%;
+}
+.marker-dot::after { /* пульсирующее кольцо */
+  content: "";
+  position: absolute;
+  inset: -5px;
+  border: 1px solid var(--gold);
+  border-radius: 50%;
+  animation: marker-pulse 2.2s ease-out infinite;
+}
+@keyframes marker-pulse {
+  0% { transform: scale(0.6); opacity: 0.9; }
+  100% { transform: scale(2.2); opacity: 0; }
+}
+
+.marker-label {
+  position: absolute;
+  left: 14px;
+  top: -0.55em;
+  white-space: nowrap;
+  font-family: var(--font-mono);
+  font-size: var(--fs-xs);
+  letter-spacing: 0.04em;
+  color: var(--ink);
+  text-shadow: 0 0 6px var(--bg), 0 0 12px var(--bg);
+}
+
+.marker-tip {
+  position: absolute;
+  left: 14px;
+  top: 1.4rem;
+  display: none;
+  width: min(16rem, 70vw);
+  padding: 0.7rem 0.9rem;
+  background: var(--tip-bg);
+  border: 1px solid var(--accent);
+  border-radius: 4px;
+  font-family: var(--font-body);
+  font-size: var(--fs-sm);
+  line-height: 1.45;
+  color: var(--ink-soft);
+  box-shadow: 0 0 24px rgba(124, 196, 255, 0.18);
+}
+/* у правого края экрана подпись и подсказка уходят влево от точки (класс ставит JS) */
+.marker.is-flip .marker-label,
+.marker.is-flip .marker-tip { left: auto; right: 14px; }
+.marker.is-open { z-index: 2; }
+.marker.is-open .marker-tip { display: block; }
+.marker.is-open .marker-dot { background: var(--accent); box-shadow: 0 0 12px var(--accent); }
+
+.marker:focus-visible { outline: none; }
+.marker:focus-visible .marker-dot { outline: 2px solid var(--accent); outline-offset: 4px; }
+
+.marker-data { display: none; }
+
+/* ---------- Мобильные ---------- */
+
+@media (max-width: 767.98px) {
+  :root { --gutter: 0px; }
+
+  .dots { display: none; }
+
+  .scene,
+  .scene--hero,
+  .scene--finale {
+    flex-direction: column;
+    justify-content: flex-end;
+    align-items: stretch;
+    padding: 0 0 0 0;
+    padding-left: max(16px, env(safe-area-inset-left, 0px));
+    padding-right: max(16px, env(safe-area-inset-right, 0px));
+    padding-top: 40svh;
+    padding-bottom: max(1rem, env(safe-area-inset-bottom, 0px));
+  }
+  .scene[data-side] { justify-content: flex-end; }
+  .scene--tall { min-height: 110svh; }
+
+  .panel,
+  .scene--hero .panel,
+  .scene--finale .panel {
+    width: 100%;
+    min-height: 0;
+    display: block;
+    text-align: left;
+    padding: 1.25rem 1.1rem 1.4rem;
+    background: var(--panel-bg);
+    -webkit-backdrop-filter: blur(14px);
+    backdrop-filter: blur(14px);
+    border: 1px solid rgba(124, 196, 255, 0.12);
+    border-radius: 10px;
+  }
+  .scene--hero .panel p,
+  .scene--finale .panel p { margin-left: 0; margin-right: 0; }
+  .scene--hero .panel-bottom,
+  .scene--finale .panel-bottom { max-width: none; margin: 0; }
+  .scene--hero .facts,
+  .scene--finale .facts { text-align: left; justify-content: start; grid-template-columns: repeat(auto-fit, minmax(8rem, 1fr)); border-top-color: var(--line); }
+  .scene--hero h1 { margin-bottom: 1rem; }
+  .scroll-hint { flex-direction: row; margin-top: 1.2rem; }
+  .scroll-hint i { width: 2.4rem; height: 1px; background: linear-gradient(to right, rgba(124, 196, 255, 0), var(--accent)); transform-origin: left; animation-name: hint-line-x; }
+  .scroll-hint i::after { left: auto; right: 0; bottom: auto; top: -4px; transform: rotate(-45deg) translate(-1px, 1px); }
+
+  h1 { font-size: clamp(2.4rem, 13vw, 3.6rem); }
+  .facts { grid-template-columns: repeat(auto-fit, minmax(7.5rem, 1fr)); margin-top: 1.3rem; }
+  .layers { grid-template-columns: minmax(6rem, 8rem) 1fr; }
+  .marker-label { font-size: 0.7rem; }
+}
+
+@keyframes hint-line-x {
+  0%, 100% { transform: scaleX(0.55); opacity: 0.5; }
+  50% { transform: scaleX(1); opacity: 1; }
+}
+
+@media (min-width: 768px) and (max-width: 1023.98px) {
+  .panel { width: min(30rem, 44vw); }
+}
+
+@media (max-width: 380px) {
+  .layers { grid-template-columns: 1fr; }
+  .layers-svg { max-width: 10rem; }
+}
+
+/* ---------- Reduced motion ---------- */
+
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  *, *::before, *::after {
+    animation: none !important;
+    transition-duration: 0.01ms !important;
+    transition-delay: 0s !important;
+    scroll-behavior: auto !important;
+  }
+  #loader { transition: opacity 0.2s ease, visibility 0.2s ease !important; transition-duration: 0.2s !important; }
+}

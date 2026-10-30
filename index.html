@@ -1,0 +1,173 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Голубая точка</title>
+<meta name="description" content="Одностраничная история о планете Земля: путешествие от космоса через недра и океаны к ночным огням городов.">
+<meta name="color-scheme" content="dark">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Golos+Text:wght@400;500&family=JetBrains+Mono:wght@400&family=Exo+2:wght@600;800&display=swap">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<div id="loader" role="status" aria-live="polite">
+  <p class="loader-title">Загружаем планету</p>
+  <div class="loader-bar"><span></span></div>
+  <span class="loader-pct">0 %</span>
+</div>
+<noscript><style>#loader{display:none}</style></noscript>
+
+<div class="sky-tint" aria-hidden="true"></div>
+
+<canvas id="globe" aria-label="Интерактивная 3D-модель Земли"></canvas>
+
+<div class="fallback-globe" aria-hidden="true"></div>
+
+<nav class="dots" aria-label="Разделы">
+  <a href="#hero" data-target="hero" aria-label="Планета Земля"></a>
+  <a href="#cosmos" data-target="cosmos" aria-label="Место во Вселенной"></a>
+  <a href="#structure" data-target="structure" aria-label="Строение"></a>
+  <a href="#oceans" data-target="oceans" aria-label="Океаны"></a>
+  <a href="#life" data-target="life" aria-label="Жизнь"></a>
+  <a href="#night" data-target="night" aria-label="Ночная сторона"></a>
+  <a href="#finale" data-target="finale" aria-label="Дом"></a>
+</nav>
+
+<main>
+
+  <section class="scene scene--hero" id="hero" data-scene="hero" data-side="center">
+    <div class="panel">
+      <div class="panel-top">
+        <p class="eyebrow">Голубая точка · 01 / 07</p>
+        <h1>Планета Земля</h1>
+      </div>
+      <div class="panel-bottom">
+        <p class="lead">Третья планета от Солнца и единственная, где, насколько мы знаем, есть жизнь. Пролетим путь от холодной пустоты космоса до огней городов.</p>
+        <a class="scroll-hint" href="#cosmos"><span>Листайте вниз</span><i aria-hidden="true"></i></a>
+      </div>
+    </div>
+  </section>
+
+  <section class="scene scene--tall" id="cosmos" data-scene="cosmos" data-side="left">
+    <div class="panel">
+      <p class="eyebrow">02 / 07 · Место во Вселенной</p>
+      <h2>Маленькая орбита у обычной звезды</h2>
+      <p>Земля обращается вокруг Солнца на среднем расстоянии 149,6 млн км. Свет Солнца добирается до нас примерно за 8 минут 19 секунд.</p>
+      <p>Планете около 4,54 млрд лет. По орбите она летит со скоростью около 29,8 км/с, и один оборот занимает 365,256 суток.</p>
+      <dl class="facts">
+        <div><dt>До Солнца</dt><dd><span class="count" data-to="149.6" data-decimals="1">149,6</span> <span class="unit">млн км</span></dd></div>
+        <div><dt>Возраст</dt><dd><span class="count" data-to="4.54" data-decimals="2">4,54</span> <span class="unit">млрд лет</span></dd></div>
+        <div><dt>Скорость по орбите</dt><dd><span class="count" data-to="29.8" data-decimals="1">29,8</span> <span class="unit">км/с</span></dd></div>
+      </dl>
+    </div>
+  </section>
+
+  <section class="scene scene--tall" id="structure" data-scene="structure" data-side="right">
+    <div class="panel">
+      <p class="eyebrow">03 / 07 · Строение</p>
+      <h2>Слои под нашими ногами</h2>
+      <p>Твёрдая кора тонкая: около 5 км под океанами и до 70 км под горами. Под ней мантия толщиной около 2900 км.</p>
+      <p>Внешнее ядро жидкое, примерно 2200 км из железа и никеля. Его движение создаёт магнитное поле планеты. В центре лежит твёрдое внутреннее ядро радиусом около 1220 км. Земля плотнее всех планет Солнечной системы.</p>
+      <dl class="facts">
+        <div><dt>Средний радиус</dt><dd><span class="count" data-to="6371" data-decimals="0">6&nbsp;371</span> <span class="unit">км</span></dd></div>
+        <div><dt>Внутреннее ядро</dt><dd><span class="count" data-to="5400" data-decimals="0">5&nbsp;400</span> <span class="unit">°C</span></dd></div>
+        <div><dt>Средняя плотность</dt><dd><span class="count" data-to="5.51" data-decimals="2">5,51</span> <span class="unit">г/см³</span></dd></div>
+      </dl>
+      <p class="note">Температура внутреннего ядра сравнима с температурой поверхности Солнца.</p>
+      <figure class="layers">
+        <svg class="layers-svg" viewBox="0 0 210 210" role="img" aria-labelledby="layers-title">
+          <title id="layers-title">Четверть разреза Земли: кора, мантия, внешнее ядро и внутреннее ядро</title>
+          <path class="l-crust" d="M8 202 L8 2 A200 200 0 0 1 208 202 Z"/>
+          <path class="l-mantle" d="M8 202 L8 8 A194 194 0 0 1 202 202 Z"/>
+          <path class="l-outer" d="M8 202 L8 93 A109 109 0 0 1 117 202 Z"/>
+          <path class="l-inner" d="M8 202 L8 164 A38 38 0 0 1 46 202 Z"/>
+        </svg>
+        <ul class="layers-legend">
+          <li><i class="sw sw-crust" aria-hidden="true"></i><span><b>Кора</b> от 5 до 70 км</span></li>
+          <li><i class="sw sw-mantle" aria-hidden="true"></i><span><b>Мантия</b> около 2900 км</span></li>
+          <li><i class="sw sw-outer" aria-hidden="true"></i><span><b>Внешнее ядро</b> жидкое, около 2200 км</span></li>
+          <li><i class="sw sw-inner" aria-hidden="true"></i><span><b>Внутреннее ядро</b> твёрдое, радиус около 1220 км</span></li>
+        </ul>
+        <figcaption>Четверть разреза Земли. Толщина коры на схеме увеличена, иначе её не было бы видно.</figcaption>
+      </figure>
+    </div>
+  </section>
+
+  <section class="scene scene--tall" id="oceans" data-scene="oceans" data-side="left">
+    <div class="panel">
+      <p class="eyebrow">04 / 07 · Океаны</p>
+      <h2>Планета, покрытая водой</h2>
+      <p>Океаны занимают около 71 % поверхности. Почти вся вода на Земле, около 97 %, солёная. Средняя глубина океана около 3,7 км.</p>
+      <p>Самый большой из них Тихий: около 165 млн км². Он больше всей суши вместе взятой. Нажмите на точки на глобусе, чтобы заглянуть в особые места.</p>
+      <dl class="facts">
+        <div><dt>Поверхности под водой</dt><dd><span class="count" data-to="71" data-decimals="0">71</span> <span class="unit">%</span></dd></div>
+        <div><dt>Средняя глубина</dt><dd><span class="count" data-to="3.7" data-decimals="1">3,7</span> <span class="unit">км</span></dd></div>
+        <div><dt>Воды солёные</dt><dd><span class="count" data-to="97" data-decimals="0">97</span> <span class="unit">%</span></dd></div>
+      </dl>
+    </div>
+    <ul class="marker-data" hidden>
+      <li data-lat="11.35" data-lon="142.2" data-title="Марианская впадина">Самое глубокое место океана, почти 11 км.</li>
+      <li data-lat="-18.3" data-lon="147.7" data-title="Большой Барьерный риф">Крупнейшая система коралловых рифов, около 2300 км. Видна из космоса.</li>
+      <li data-lat="19.82" data-lon="-155.47" data-title="Мауна-Кеа, Гавайи">Если считать от подножия на дне океана, выше 10 км. Это выше Эвереста.</li>
+      <li data-lat="-48.88" data-lon="-123.39" data-title="Точка Немо">Самая удалённая от суши точка океана. До ближайшего берега около 2700 км.</li>
+    </ul>
+  </section>
+
+  <section class="scene scene--tall" id="life" data-scene="life" data-side="right">
+    <div class="panel">
+      <p class="eyebrow">05 / 07 · Жизнь</p>
+      <h2>Зелёное, живое, шумное</h2>
+      <p>Леса покрывают около 31 % суши. Учёные описали от 1,2 до 2 млн видов, а всего их, по оценкам, около 8,7 млн. Большинство ещё не открыто.</p>
+      <p>Амазонские леса — крупнейший тропический лес планеты, около 5,5 млн км². По оценкам WWF, там живёт около 10 % известных видов.</p>
+      <dl class="facts">
+        <div><dt>Суши под лесом</dt><dd><span class="count" data-to="31" data-decimals="0">31</span> <span class="unit">%</span></dd></div>
+        <div><dt>Видов, по оценке</dt><dd><span class="count" data-to="8.7" data-decimals="1">8,7</span> <span class="unit">млн</span></dd></div>
+        <div><dt>Амазонские леса</dt><dd><span class="count" data-to="5.5" data-decimals="1">5,5</span> <span class="unit">млн км²</span></dd></div>
+      </dl>
+    </div>
+  </section>
+
+  <section class="scene" id="night" data-scene="night" data-side="left">
+    <div class="panel">
+      <p class="eyebrow">06 / 07 · Ночная сторона</p>
+      <h2>Земля, которая светится сама</h2>
+      <p>На Земле живёт около 8,2 млрд человек, и около половины из них живут в городах. Ночью города видны из космоса как россыпи огней.</p>
+      <p>Этот свет имеет цену. По данным атласа светового загрязнения 2016 года, около 80 % людей живут под небом, засвеченным искусственным светом.</p>
+      <dl class="facts">
+        <div><dt>Людей на Земле</dt><dd><span class="count" data-to="8.2" data-decimals="1">8,2</span> <span class="unit">млрд</span></dd></div>
+        <div><dt>Живут под засветкой</dt><dd><span class="count" data-to="80" data-decimals="0">80</span> <span class="unit">%</span></dd></div>
+      </dl>
+    </div>
+  </section>
+
+  <section class="scene" id="finale" data-scene="finale" data-side="left">
+    <div class="panel">
+      <div class="panel-top">
+        <p class="eyebrow">07 / 07 · Дом</p>
+        <h2>Береги её</h2>
+      </div>
+      <div class="panel-bottom">
+        <p class="lead">14 февраля 1990 года «Вояджер-1» оглянулся с расстояния около 6 млрд км и снял Землю. На кадре она меньше пикселя, бледно-голубая точка в луче света.</p>
+        <p>Карл Саган сказал об этом снимке просто: другого дома у нас нет.</p>
+        <dl class="facts">
+          <div><dt>Расстояние до снимка</dt><dd><span class="count" data-to="6" data-decimals="0">6</span> <span class="unit">млрд км</span></dd></div>
+          <div><dt>Размер Земли на кадре</dt><dd>0,12 <span class="unit">пикселя</span></dd></div>
+        </dl>
+        <a class="to-top" href="#hero">Вернуться к началу</a>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<div id="markers" aria-label="Точки на карте океана"></div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.15.0/gsap.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.15.0/ScrollTrigger.min.js"></script>
+<script>if (location.protocol === 'file:') document.write('<script src="js/textures.js"><\/script>');</script>
+<script src="js/main.js"></script>
+</body>
+</html>
