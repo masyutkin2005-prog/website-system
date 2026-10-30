@@ -712,6 +712,24 @@ html.is-aerial #markers { opacity: 0; }
     text-overflow: ellipsis;
   }
 }
+/* боковая колонка подписи (снимок с data-layout="side"), только планшет и десктоп */
+@media (min-width: 768px) {
+  .aerial--side .aerial-caption {
+    top: 0;
+    bottom: 0;
+    left: 0;
+    right: auto;
+    /* колонка шире текста: правая часть — только мягкое затухание, без видимой границы */
+    width: min(36rem, 46vw);
+    padding-right: min(10rem, 14vw);
+    box-sizing: border-box;
+    align-content: end;
+    padding-block: 3rem calc(2.5rem + env(safe-area-inset-bottom, 0px));
+    background: linear-gradient(to right, rgba(5, 7, 15, 0.88) 0%, rgba(5, 7, 15, 0.62) 45%, rgba(5, 7, 15, 0.2) 75%, rgba(5, 7, 15, 0) 100%);
+  }
+  .aerial--side .aerial-title { font-size: clamp(1.8rem, 3vw, 2.6rem); }
+  .aerial--side .aerial-img { background-position: 60% 35%; }
+}
 .focus-back:hover { background: rgba(124, 196, 255, 0.14); }
 .focus-back:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
 

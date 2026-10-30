@@ -420,6 +420,7 @@ function initGlobe(canvas) {
     aerialImg.style.transformOrigin = m.data.origin || '';
     aerialImg.style.backgroundPosition = m.data.origin || '';
     aerialImg.style.setProperty('--aerial-scale', m.data.scale || '1.45');
+    aerial.classList.toggle('aerial--side', m.data.layout === 'side');
     aerialImg.setAttribute('aria-label', m.data.view || m.data.title);
     aerial.querySelector('.aerial-eyebrow').textContent = m.data.eyebrow || 'Вид сверху';
     aerial.querySelector('.aerial-title').textContent = m.data.title;
