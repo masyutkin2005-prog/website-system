@@ -680,6 +680,38 @@ html.is-aerial #markers { opacity: 0; }
   .aerial-img.is-moving { animation: none; }
   .aerial { transition: none; }
 }
+
+/* компактная подпись снимка на телефоне */
+@media (max-width: 767.98px) {
+  .aerial-caption {
+    padding-block: 2rem calc(4.8rem + env(safe-area-inset-bottom, 0px));
+    padding-left: max(16px, env(safe-area-inset-left, 0px));
+    padding-right: max(16px, env(safe-area-inset-right, 0px));
+    background: linear-gradient(to top, rgba(5, 7, 15, 0.94) 0%, rgba(5, 7, 15, 0.82) 60%, rgba(5, 7, 15, 0) 100%);
+    gap: 0.35rem;
+    max-height: 40svh;
+    overflow: hidden;
+    box-sizing: border-box;
+  }
+  .aerial-title { font-size: 1.5rem; line-height: 1.1; }
+  .aerial-tip { display: none; }
+  .aerial-view {
+    font-size: 0.9rem;
+    line-height: 1.35;
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 3;
+    line-clamp: 3;
+    overflow: hidden;
+  }
+  .aerial-credit {
+    margin-top: 0.2rem;
+    font-size: 0.6rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+}
 .focus-back:hover { background: rgba(124, 196, 255, 0.14); }
 .focus-back:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
 

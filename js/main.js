@@ -418,7 +418,9 @@ function initGlobe(canvas) {
     aerial.querySelector('.aerial-title').textContent = m.data.title;
     aerial.querySelector('.aerial-tip').textContent = m.tip;
     aerial.querySelector('.aerial-view').textContent = m.data.view || '';
-    aerial.querySelector('.aerial-credit').textContent = m.data.credit || '';
+    const credit = aerial.querySelector('.aerial-credit');
+    credit.textContent = m.data.credit || '';
+    credit.title = m.data.credit || '';
     // перезапуск медленного «снижения» над местом
     aerialImg.classList.remove('is-moving');
     void aerialImg.offsetWidth;
